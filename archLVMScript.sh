@@ -389,13 +389,13 @@ sleep 1
 echo -e "\nInstalling the linux kernel & essential tools ...\n"
 pacman -S linux linux-firmware linux-headers base-devel lvm2 git neofetch zip unzip --noconfirm --needed
 echo -e "\nInstalling the nvim terminal text editor...\n"
-pacman -S nvim --noconfirm --needed
+pacman -S neovim --noconfirm --needed
 echo -e "\nInstalling networking tools...\n"
 pacman -S networkmanager wpa_supplicant wireless_tools netctl dialog bluez bluez-utils --noconfirm --needed
 echo -e "\nEnabling Network Manager...\n"
 systemctl enable NetworkManager
 echo -e "\nConfiguring the linux initcpio...\n"
-sed -i "s/HOOKS=(base udev autodetect modconf kms keyboard keymap consolefont block filesystems fsck)/HOOKS=(base udev autodetect modconf kms keyboard keymap consolefont block lvm2 filesystems fsck)/" /etc/mkinitcpio.conf
+sed -i "s/^HOOKS=(base udev autodetect modconf kms keyboard keymap consolefont block filesystems fsck)/HOOKS=(base udev autodetect modconf kms keyboard keymap consolefont block lvm2 filesystems fsck)/" /etc/mkinitcpio.conf
 mkinitcpio -P linux
 sleep 1
 echo -e "\nConfiguring the locale to US English UTF-8...\n"
