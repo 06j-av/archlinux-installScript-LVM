@@ -535,6 +535,7 @@ echo "We'll leave it to you to either do some more configurations or reboot to y
 echo "To reboot, run these commands in order:"
 echo -e "exit\numount -R /mnt\nreboot"
 exit 0
-}
+
+REALEND
 
 arch-chroot /mnt /bin/bash archInstall.sh
