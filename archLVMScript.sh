@@ -82,10 +82,8 @@ fi
 sleep 2
 echo -e "\nLet's configure some stuff."
 sleep 1
-read -sp "Make a password for root: " rootpasswd
 echo ''
 read -p "What will be your username? " username
-read -sp "Enter the password for $username: " userpasswd
 echo ''
 read -p "Enter your preferred hostname: " nameofhost
 echo -e "What's your time zone?"
@@ -251,6 +249,9 @@ return_configurations() {
 		echo "Minimal installation"
 	fi
 
+  	echo "System hostname: $nameofhost"
+   	echo "System timezone: $timezone"
+
 
 	if [ $swapspace -eq '1' ]
 	then
@@ -269,6 +270,7 @@ return_configurations() {
 	if [ $cpumake -eq '1' ]
 	then
 		echo "CPU: Intel"
+  		echo "intel-ucode will be installed."
 	elif [ $cpumake -eq '2' ]
 		then
 		echo "CPU: AMD"
@@ -278,11 +280,11 @@ return_configurations() {
 	
 	if [ "$nvidiayn" = "y" ] && [ $nvidiatype -eq '1' ]
 	then
-		echo "GPU: NVIDIA GPU (using proprietary drivers)."
+		echo "GPU: NVIDIA GPU (using nvidia)."
 		echo "The nvidia package will be installed."
 	elif [ "$nvidiayn" = "y" ]  && [ $nvidiatype -eq '2' ]
 	then
-		echo "GPU: NVIDIA GPU (using open source drivers)."
+		echo "GPU: NVIDIA GPU (using nvidia-open)."
 		echo "The nvidia-open package will be installed."
 	elif [ "$nvidiayn" = "n" ]
 	then
@@ -386,7 +388,7 @@ sleep 1
 mkdir /mnt/installScript-files
 
 cat <<REALEND > /mnt/installScript-files/archInstall.sh
-clears
+clear
 echo "-----------------------------------------"
 echo "INSTALLATION"
 echo "-----------------------------------------"
@@ -400,7 +402,9 @@ pacman -S networkmanager wpa_supplicant wireless_tools netctl dialog bluez bluez
 echo -e "\nEnabling Network Manager...\n"
 systemctl enable NetworkManager
 echo -e "\nConfiguring the linux initcpio...\n"
-sed -i "s/^HOOKS=(base udev autodetect modconf kms keyboard keymap consolefont block filesystems fsck)/HOOKS=(base udev autodetect modconf kms keyboard keymap consolefont block lvm2 filesystems fsck)/" /etc/mkinitcpio.conf
+mv /etc/mkinitcpio.conf /etc/mkinitcpio.conf.bak
+cp /installScript-files/mkinitcpio_withlvm.conf /etc/mkinitcpio.conf
+rm /etc/mkinitcpio.conf.bak
 mkinitcpio -P linux
 sleep 1
 echo -e "\nConfiguring the locale to US English UTF-8...\n"
@@ -408,11 +412,18 @@ sed -i 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
 locale-gen
 echo 'LANG=en_US.UTF-8' > /etc/locale.conf
 sleep 1
-echo -e "\nSetting the root password...\n"
-chpasswd root:$rootpasswd
+
+clear
+echo "-----------------------------------------"
+echo "Root and user setup"
+echo "-----------------------------------------"
+
+echo -e "\Set the root password.\n"
+passwd
 echo -e "\nCreating user $username...\n"
 useradd -m -g users -G wheel -s $username
-chpasswd $username:$userpasswd
+echo -e "\nSet the password for $username.\n"
+password $username
 sleep 1
 echo -e "\nConfiguring sudoers...\n"
 sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
@@ -471,13 +482,13 @@ else
 	echo "A swap file will not be made, per your request."
 fi
 sleep 1
+echo -e "\nSetting the hostname...\n"
 hostnamectl set-hostname $nameofhost
 echo -e "127.0.0.1	localhost\n127.0.1.1	$nameofhost" > /etc/hosts
 echo -e "\nSetting the timezone...\n"
 timedatectl set-timezone $timezone
 systemctl enable systemd-timesyncd
 sleep 1
-echo -e "\nSetting the hostname...\n"
 echo -e "\nEnabling the multilib repository...\n"
 echo -e "[multilib]\nInclude = /etc/pacman.d/mirrorlist" >> /etc/pacman.conf
 sleep 1
@@ -505,18 +516,19 @@ then
 		echo -e "\nInstalling the nvidia-open package...\n"
 		pacman -S nvidia-open nvidia-utils --noconfirm --needed
 	fi
-	sed -i 's/^MODULES=()/MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)' /etc/mkinitcpio.conf
-	echo -e "\nUpdating the linux initramfs...\n"
-	mkinitcpio -P linux
+ 	echo -e "\nUpdating the linux initramfs...\n"
+	mv /etc/mkinitcpio.conf /etc/mkinitcpio.conf.bak
+	cp /installScript-files/mkinitcpio_withnvidia.conf /etc/mkinitcpio.conf
+	rm /etc/mkinitcpio.conf.bak
 elif [ "$nvidiayn" = "n" ]
 then
-	echo -e "\nInstalling the open-source GPU drivers...\n"
+	echo -e "\nInstalling the mesa package...\n"
 	pacman -S mesa --noconfirm --needed
 fi
 sleep 1
 if [ $desktop -eq '1' ]
 then
-	echo -e "\nInstalling KDE Plasma with SDDM.\n"
+	echo -e "\nInstalling KDE Plasma with SDDM...\n"
 	pacman -S plasma sddm alacritty --noconfirm --needed
 	systemctl enable sddm
 elif [ $desktop -eq '2' ]
@@ -526,7 +538,7 @@ then
 	systemctl enable ly
 elif [ $desktop -eq '3' ]
 then
-	echo -e "\nInstalling Cinnamon with LightDM.\n"
+	echo -e "\nInstalling Cinnamon with LightDM...\n"
 	pacman -S lightdm lightdm-gtk-greeter cinnamon metacity alacritty --noconfirm --needed
 	systemctl enable lightdm
 elif [ $desktop -eq '4' ]
@@ -543,7 +555,8 @@ exit 0
 
 REALEND
 
-cp mkinitcpio_withLVM.conf /mnt
+cp mkinitcpio_withlvm.conf /mnt/installScript-files
+cp mkinitcpio_withnvidia.conf /mnt/installScript-files
 
 arch-chroot /mnt /bin/bash installScript-files/archInstall.sh
-rm /mnt/installScript-files/archInstall.sh
+rm -rf /mnt/installScript-files
