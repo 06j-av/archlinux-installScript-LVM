@@ -83,8 +83,10 @@ sleep 2
 echo -e "\nLet's configure some stuff."
 sleep 1
 read -sp "Make a password for root: " rootpasswd
+echo ''
 read -p "What will be your username? " username
 read -sp "Enter the password for $username: " userpasswd
+echo ''
 read -p "Enter your preferred hostname: " nameofhost
 echo -e "What's your time zone?"
 read -p "They usually follow the Region/City format, like 'America/Los_Angeles'. " timezone
@@ -382,6 +384,7 @@ pacstrap /mnt base --noconfirm --needed
 sleep 1
 
 cat <<REALEND > /mnt/archInstall.sh
+clears
 echo "-----------------------------------------"
 echo "INSTALLATION"
 echo "-----------------------------------------"
