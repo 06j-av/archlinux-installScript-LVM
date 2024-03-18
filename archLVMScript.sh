@@ -539,3 +539,4 @@ exit 0
 REALEND
 
 arch-chroot /mnt /bin/bash archInstall.sh
+rm /mnt/archInstall.sh
