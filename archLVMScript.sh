@@ -404,10 +404,10 @@ locale-gen
 echo 'LANG=en_US.UTF-8' > /etc/locale.conf
 sleep 1
 echo -e "\nSetting the root password...\n"
-echo root:$rootpasswd | chpasswd
+chpasswd root:$rootpasswd
 echo -e "\nCreating user $username...\n"
 useradd -m -g users -G wheel -s $username
-echo $username:$userpasswd | chpasswd
+chpasswd $username:$userpasswd
 sleep 1
 echo -e "\nConfiguring sudoers...\n"
 sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
@@ -466,13 +466,13 @@ else
 	echo "A swap file will not be made, per your request."
 fi
 sleep 1
+hostnamectl set-hostname $nameofhost
+echo -e "127.0.0.1	localhost\n127.0.1.1	$nameofhost" > /etc/hosts
 echo -e "\nSetting the timezone...\n"
 timedatectl set-timezone $timezone
 systemctl enable systemd-timesyncd
 sleep 1
 echo -e "\nSetting the hostname...\n"
-hostnamectl set-hostname $nameofhost
-echo -e "127.0.0.1	localhost\n127.0.1.1	$nameofhost" > /etc/hosts
 echo -e "\nEnabling the multilib repository...\n"
 echo -e "[multilib]\nInclude = /etc/pacman.d/mirrorlist" >> /etc/pacman.conf
 sleep 1
@@ -500,7 +500,7 @@ then
 		echo -e "\nInstalling the nvidia-open package...\n"
 		pacman -S nvidia-open nvidia-utils --noconfirm --needed
 	fi
-	sed -i 's/MODULES=()/MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)' /etc/mkinitcpio.conf
+	sed -i 's/^MODULES=()/MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)' /etc/mkinitcpio.conf
 	echo -e "\nUpdating the linux initramfs...\n"
 	mkinitcpio -P linux
 elif [ "$nvidiayn" = "n" ]
