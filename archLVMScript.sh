@@ -555,8 +555,9 @@ exit 0
 
 REALEND
 
-cp mkinitcpio_withlvm.conf /mnt/installScript-files
-cp mkinitcpio_withnvidia.conf /mnt/installScript-files
+mkdir /mnt/installScript-files
+cp mkinitcpio_withlvm.conf /mnt/installScript-files/
+cp mkinitcpio_withnvidia.conf /mnt/installScript-files/
 
 arch-chroot /mnt /bin/bash installScript-files/archInstall.sh
 rm -rf /mnt/installScript-files
