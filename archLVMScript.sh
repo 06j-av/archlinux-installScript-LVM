@@ -383,7 +383,9 @@ pacstrap /mnt base --noconfirm --needed
 
 sleep 1
 
-cat <<REALEND > /mnt/archInstall.sh
+mkdir /mnt/installScript-files
+
+cat <<REALEND > /mnt/installScript-files/archInstall.sh
 clears
 echo "-----------------------------------------"
 echo "INSTALLATION"
@@ -541,5 +543,7 @@ exit 0
 
 REALEND
 
-arch-chroot /mnt /bin/bash archInstall.sh
-rm /mnt/archInstall.sh
+cp mkinitcpio_withLVM.conf /mnt
+
+arch-chroot /mnt /bin/bash installScript-files/archInstall.sh
+rm /mnt/installScript-files/archInstall.sh
