@@ -381,193 +381,160 @@ pacstrap /mnt base --noconfirm --needed
 
 sleep 1
 
-continueInstall() {
-
-	echo "-----------------------------------------"
-	echo "INSTALLATION"
-	echo "-----------------------------------------"
-	sleep 1
-
-	echo -e "\nInstalling the linux kernel & essential tools ...\n"
-	pacman -S linux linux-firmware linux-headers base-devel lvm2 git neofetch zip unzip --noconfirm --needed
-
-	echo -e "\nInstalling the nvim terminal text editor...\n"
-	pacman -S nvim --noconfirm --needed
-
-	echo -e "\nInstalling networking tools...\n"
-	pacman -S networkmanager wpa_supplicant wireless_tools netctl dialog bluez bluez-utils --noconfirm --needed
-
-	echo -e "\nEnabling Network Manager...\n"
-	systemctl enable NetworkManager
-
-	echo -e "\nConfiguring the linux initcpio...\n"
-	sed -i "s/HOOKS=(base udev autodetect modconf kms keyboard keymap consolefont block filesystems fsck)/HOOKS=(base udev autodetect modconf kms keyboard keymap consolefont block lvm2 filesystems fsck)/" /etc/mkinitcpio.conf
-	mkinitcpio -P linux
-
-	sleep 1
-
-	echo -e "\nConfiguring the locale to US English UTF-8...\n"
-	sed -i 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
-	locale-gen
-	echo 'LANG=en_US.UTF-8' > /etc/locale.conf
-
-	sleep 1
-
-	echo -e "\nSetting the root password...\n"
-	echo root:$rootpasswd | chpasswd
-
-	echo -e "\nCreating user $username...\n"
-	useradd -m -g users -G wheel -s $username
-	echo $username:$userpasswd | chpasswd
-
-	sleep 1
-
-	echo -e "\nConfiguring sudoers...\n"
-	sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
-
-	sleep 1
-
-	echo -e "\nInstalling the GRUB bootloader...\n"
-	pacman -S grub dosfstools os-prober mtools efibootmgr --noconfirm --needed
-	grub-install --target=x86_64-efi --bootloader-id=grub_uefi --recheck
-	if [ -d /boot/grub/locale ]; then
-		echo "Copying the locale for GRUB..."
-		cp /usr/share/locale/en\@quot/LC_MESSAGES/grub.mo /boot/grub/locale/en.mo
-		echo "Making the GRUB configuration..."
-		grub-mkconfig -o /boot/grub/grub.cfg
-	else
-		echo "Making the /boot/grub/locale directory..."
-		mkdir /boot/grub/locale
-		echo "Copying the locale for GRUB..."
-		cp /usr/share/locale/en\@quot/LC_MESSAGES/grub.mo /boot/grub/locale/en.mo
-		grub-mkconfig -o /boot/grub/grub.cfg
-	fi
-
-	sleep 1
-
-	if [ $swapspace -ne '1' ]
-	then	
-		echo -e "\nBuilding swap file...\n"
-		if [ $swapspace -eq '2' ]
-		then
-			dd if /dev/zero of=/swapfile bs=1G count=2 status=progress
-			chmod 600 /swapfile
-			mkswap -U clear /swapfile
-			echo -e "\nMaking a fstab backup...\n"
-			cp /etc/fstab /etc/fstab.bak
-			echo '/swapfile none swap sw 0 0' | tee -a /etc/fstab
-			mount -a
-			swapon -a
-		elif [ $swapspace -eq '3' ]
-		then
-			dd if /dev/zero of=/swapfile bs=1G count=4 status=progress
-			chmod 600 /swapfile
-			mkswap -U clear /swapfile
-			echo -e "\nMaking a fstab backup...\n"
-			cp /etc/fstab /etc/fstab.bak
-			echo '/swapfile none swap sw 0 0' | tee -a /etc/fstab
-			mount -a
-			swapon -a
-		elif [ $swapspace -eq '4' ]
-		then
-			dd if /dev/zero of=/swapfile bs=1G count=8 status=progress
-			chmod 600 /swapfile
-			mkswap -U clear /swapfile
-			echo -e "\nMaking a fstab backup...\n"
-			cp /etc/fstab /etc/fstab.bak
-			# echo '/swapfile none swap sw 0 0' | tee -a /etc/fstab
-			# mount -a
-			# swapon -a
-		fi
-	else
-		echo "A swap file will not be made, per your request."
-	fi
-
-	sleep 1
-
-	echo -e "\nSetting the timezone...\n"
-	timedatectl set-timezone $timezone
-	systemctl enable systemd-timesyncd
-
-	sleep 1
-
-	echo -e "\nSetting the hostname...\n"
-	hostnamectl set-hostname $nameofhost
-	echo -e "127.0.0.1	localhost\n127.0.1.1	$nameofhost" > /etc/hosts
-
-	echo -e "\nEnabling the multilib repository...\n"
-	echo -e "[multilib]\nInclude = /etc/pacman.d/mirrorlist" >> /etc/pacman.conf
-
-	sleep 1
-
-	if [ $cpumake -eq '1' ]
-	then
-		echo -e "\nInstalling the Intel microcode...\n"
-		pacman -S intel-ucode --noconfirm --needed
-	elif [ $cpumake -eq '2' ]
-	then
-		echo -e "\nInstalling the AMD microcode...\n"
-		pacman -S amd-ucode --noconfirm --needed
-	fi
+cat <<REALEND > /mnt/archInstall.sh
+echo "-----------------------------------------"
+echo "INSTALLATION"
+echo "-----------------------------------------"
+sleep 1
+echo -e "\nInstalling the linux kernel & essential tools ...\n"
+pacman -S linux linux-firmware linux-headers base-devel lvm2 git neofetch zip unzip --noconfirm --needed
+echo -e "\nInstalling the nvim terminal text editor...\n"
+pacman -S nvim --noconfirm --needed
+echo -e "\nInstalling networking tools...\n"
+pacman -S networkmanager wpa_supplicant wireless_tools netctl dialog bluez bluez-utils --noconfirm --needed
+echo -e "\nEnabling Network Manager...\n"
+systemctl enable NetworkManager
+echo -e "\nConfiguring the linux initcpio...\n"
+sed -i "s/HOOKS=(base udev autodetect modconf kms keyboard keymap consolefont block filesystems fsck)/HOOKS=(base udev autodetect modconf kms keyboard keymap consolefont block lvm2 filesystems fsck)/" /etc/mkinitcpio.conf
+mkinitcpio -P linux
+sleep 1
+echo -e "\nConfiguring the locale to US English UTF-8...\n"
+sed -i 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
+locale-gen
+echo 'LANG=en_US.UTF-8' > /etc/locale.conf
+sleep 1
+echo -e "\nSetting the root password...\n"
+echo root:$rootpasswd | chpasswd
+echo -e "\nCreating user $username...\n"
+useradd -m -g users -G wheel -s $username
+echo $username:$userpasswd | chpasswd
+sleep 1
+echo -e "\nConfiguring sudoers...\n"
+sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
+sleep 1
+echo -e "\nInstalling the GRUB bootloader...\n"
+pacman -S grub dosfstools os-prober mtools efibootmgr --noconfirm --needed
+grub-install --target=x86_64-efi --bootloader-id=grub_uefi --recheck
+if [ -d /boot/grub/locale ]; then
+	echo "Copying the locale for GRUB..."
+	cp /usr/share/locale/en\@quot/LC_MESSAGES/grub.mo /boot/grub/locale/en.mo
+	echo "Making the GRUB configuration..."
 	grub-mkconfig -o /boot/grub/grub.cfg
-
-	sleep 1
-
-	if [ "$nvidiayn" = "y" ]
+else
+	echo "Making the /boot/grub/locale directory..."
+	mkdir /boot/grub/locale
+	echo "Copying the locale for GRUB..."
+	cp /usr/share/locale/en\@quot/LC_MESSAGES/grub.mo /boot/grub/locale/en.mo
+	grub-mkconfig -o /boot/grub/grub.cfg
+fi
+sleep 1
+if [ $swapspace -ne '1' ]
+then	
+	echo -e "\nBuilding swap file...\n"
+	if [ $swapspace -eq '2' ]
 	then
-		echo -e "\nNVIDIA time.\n"
-		sleep 0.5
-		if [ $nvidiatype -eq '1' ]
-		then
-			echo -e '\nInstalling the nvidia package...\n'
-			pacman -S nvidia nvidia-utils --noconfirm --needed
-		elif [ $nvidiatype -eq '2' ]
-		then
-			echo -e "\nInstalling the nvidia-open package...\n"
-			pacman -S nvidia-open nvidia-utils --noconfirm --needed
-		fi
-		sed -i 's/MODULES=()/MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)' /etc/mkinitcpio.conf
-		echo -e "\nUpdating the linux initramfs...\n"
-		mkinitcpio -P linux
-
-	elif [ "$nvidiayn" = "n" ]
+		dd if /dev/zero of=/swapfile bs=1G count=2 status=progress
+		chmod 600 /swapfile
+		mkswap -U clear /swapfile
+		echo -e "\nMaking a fstab backup...\n"
+		cp /etc/fstab /etc/fstab.bak
+		echo '/swapfile none swap sw 0 0' | tee -a /etc/fstab
+		mount -a
+		swapon -a
+	elif [ $swapspace -eq '3' ]
 	then
-		echo -e "\nInstalling the open-source GPU drivers...\n"
-		pacman -S mesa --noconfirm --needed
+		dd if /dev/zero of=/swapfile bs=1G count=4 status=progress
+		chmod 600 /swapfile
+		mkswap -U clear /swapfile
+		echo -e "\nMaking a fstab backup...\n"
+		cp /etc/fstab /etc/fstab.bak
+		echo '/swapfile none swap sw 0 0' | tee -a /etc/fstab
+		mount -a
+		swapon -a
+	elif [ $swapspace -eq '4' ]
+	then
+		dd if /dev/zero of=/swapfile bs=1G count=8 status=progress
+		chmod 600 /swapfile
+		mkswap -U clear /swapfile
+		echo -e "\nMaking a fstab backup...\n"
+		cp /etc/fstab /etc/fstab.bak
+		echo '/swapfile none swap sw 0 0' | tee -a /etc/fstab
+		mount -a
+		swapon -a
 	fi
-
-	sleep 1
-
-	if [ $desktop -eq '1' ]
+else
+	echo "A swap file will not be made, per your request."
+fi
+sleep 1
+echo -e "\nSetting the timezone...\n"
+timedatectl set-timezone $timezone
+systemctl enable systemd-timesyncd
+sleep 1
+echo -e "\nSetting the hostname...\n"
+hostnamectl set-hostname $nameofhost
+echo -e "127.0.0.1	localhost\n127.0.1.1	$nameofhost" > /etc/hosts
+echo -e "\nEnabling the multilib repository...\n"
+echo -e "[multilib]\nInclude = /etc/pacman.d/mirrorlist" >> /etc/pacman.conf
+sleep 1
+if [ $cpumake -eq '1' ]
+then
+	echo -e "\nInstalling the Intel microcode...\n"
+	pacman -S intel-ucode --noconfirm --needed
+elif [ $cpumake -eq '2' ]
+then
+	echo -e "\nInstalling the AMD microcode...\n"
+	pacman -S amd-ucode --noconfirm --needed
+fi
+grub-mkconfig -o /boot/grub/grub.cfg
+sleep 1
+if [ "$nvidiayn" = "y" ]
+then
+	echo -e "\nNVIDIA time.\n"
+	sleep 0.5
+	if [ $nvidiatype -eq '1' ]
 	then
-		echo -e "\nInstalling KDE Plasma with SDDM.\n"
-		pacman -S plasma sddm alacritty --noconfirm --needed
-		systemctl enable sddm
-	elif [ $desktop -eq '2' ]
+		echo -e '\nInstalling the nvidia package...\n'
+		pacman -S nvidia nvidia-utils --noconfirm --needed
+	elif [ $nvidiatype -eq '2' ]
 	then
-		echo -e "\nInstalling i3 with ly...\n"
-		pacman -S i3 ly alacritty --noconfirm --needed
-		systemctl enable ly
-	elif [ $desktop -eq '3' ]
-	then
-		echo -e "\nInstalling Cinnamon with LightDM.\n"
-		pacman -S lightdm lightdm-gtk-greeter cinnamon metacity alacritty --noconfirm --needed
-		systemctl enable lightdm
-	elif [ $desktop -eq '4' ]
-	then
-		echo "No desktop environment and display manager will be installed."
+		echo -e "\nInstalling the nvidia-open package...\n"
+		pacman -S nvidia-open nvidia-utils --noconfirm --needed
 	fi
-
-	sleep 1
-
-	clear
-	echo "Installation is COMPLETE. "
-	echo "We'll leave it to you to either do some more configurations or reboot to your new Arch system."
-	echo "To reboot, run these commands in order:"
-	echo -e "exit\numount -R /mnt\nreboot"
-	exit 0
+	sed -i 's/MODULES=()/MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)' /etc/mkinitcpio.conf
+	echo -e "\nUpdating the linux initramfs...\n"
+	mkinitcpio -P linux
+elif [ "$nvidiayn" = "n" ]
+then
+	echo -e "\nInstalling the open-source GPU drivers...\n"
+	pacman -S mesa --noconfirm --needed
+fi
+sleep 1
+if [ $desktop -eq '1' ]
+then
+	echo -e "\nInstalling KDE Plasma with SDDM.\n"
+	pacman -S plasma sddm alacritty --noconfirm --needed
+	systemctl enable sddm
+elif [ $desktop -eq '2' ]
+then
+	echo -e "\nInstalling i3 with ly...\n"
+	pacman -S i3 ly alacritty --noconfirm --needed
+	systemctl enable ly
+elif [ $desktop -eq '3' ]
+then
+	echo -e "\nInstalling Cinnamon with LightDM.\n"
+	pacman -S lightdm lightdm-gtk-greeter cinnamon metacity alacritty --noconfirm --needed
+	systemctl enable lightdm
+elif [ $desktop -eq '4' ]
+then
+	echo "No desktop environment and display manager will be installed."
+fi
+sleep 1
+clear
+echo "Installation is COMPLETE. "
+echo "We'll leave it to you to either do some more configurations or reboot to your new Arch system."
+echo "To reboot, run these commands in order:"
+echo -e "exit\numount -R /mnt\nreboot"
+exit 0
 }
 
-clear
-
-arch-chroot /mnt continueInstall
+arch-chroot /mnt /bin/bash archInstall.sh
