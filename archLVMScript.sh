@@ -602,6 +602,12 @@ then
 	echo "No desktop environment and display manager will be installed."
 fi
 
+# Remove the ANNOYING PC speaker module from the kernel
+echo -e "\nLastly... blacklisting the PC speaker module\n"
+rmmod pcspkr
+rmmod snd_pcsp
+echo -e "blacklist pcspkr\nblacklist snd_pcsp" > /etc/modprobe.d/nobeep.conf
+
 sleep 1
 clear
 echo "Installation is COMPLETE. "
