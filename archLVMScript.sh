@@ -87,6 +87,9 @@ echo ''
 # Prompt the user for their username, hostname, and time zone.
 # The user will enter the root and user passwords during installation.
 read -p "What will be your username? " username
+read -sp "Enter the password for $username: " userpasswd
+echo ''
+read -sp "Enter the password for root: " rootpasswd
 echo ''
 read -p "Enter your preferred hostname: " nameofhost
 echo -e "What's your time zone?"
@@ -448,11 +451,11 @@ echo "-----------------------------------------"
 # Set the passwords for the user and root
 
 echo -e "\Set the root password.\n"
-passwd
+echo '$rootpasswd' | passwd --stdin root
 echo -e "\nCreating user $username...\n"
 useradd -m -g users -G wheel $username
 echo -e "\nSet the password for $username.\n"
-passwd $username
+echo '$userpasswd' | passwd --stdin $username
 sleep 1
 
 # Edit the sudoers file ensuring that people in the wheel group can use sudo.
