@@ -473,12 +473,14 @@ if [ -d /boot/grub/locale ]; then
 	echo "Copying the locale for GRUB..."
 	cp /usr/share/locale/en\@quot/LC_MESSAGES/grub.mo /boot/grub/locale/en.mo
 	echo "Making the GRUB configuration..."
+ 	sed -i 's/^#GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' /etc/default/grub
 	grub-mkconfig -o /boot/grub/grub.cfg
 else
 	echo "Making the /boot/grub/locale directory..."
 	mkdir /boot/grub/locale
 	echo "Copying the locale for GRUB..."
 	cp /usr/share/locale/en\@quot/LC_MESSAGES/grub.mo /boot/grub/locale/en.mo
+  	sed -i 's/^#GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' /etc/default/grub
 	grub-mkconfig -o /boot/grub/grub.cfg
 fi
 sleep 1
@@ -571,7 +573,9 @@ then
 	fi
  	echo -e "\nUpdating the linux initramfs...\n"
 	cp -f /installScript-files/mkinitcpio_withnvidia.conf /etc/mkinitcpio.conf
+ 	sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet"/GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet nvidia_drm.modeset=1"/' /etc/default/grub
  	mkinitcpio -P linux
+  	
 elif [ "$nvidiayn" = "n" ]
 then
 	echo -e "\nInstalling the mesa package...\n"
@@ -593,7 +597,7 @@ then
 elif [ $desktop -eq '2' ]
 then
 	echo -e "\nInstalling i3 with ly...\n"
-	pacman -S xorg i3 ly alacritty --noconfirm --needed
+	pacman -S xorg i3 ly alacritty nitrogen --noconfirm --needed
 	systemctl enable ly
 elif [ $desktop -eq '3' ]
 then
