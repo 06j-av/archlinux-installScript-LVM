@@ -450,7 +450,7 @@ echo "-----------------------------------------"
 echo -e "\Set the root password.\n"
 passwd
 echo -e "\nCreating user $username...\n"
-useradd -m -g users -G wheel -s $username
+useradd -m -g users -G wheel $username
 echo -e "\nSet the password for $username.\n"
 password $username
 sleep 1
@@ -487,7 +487,7 @@ then
 	echo -e "\nBuilding swap file...\n"
 	if [ $swapspace -eq '2' ]
 	then
-		dd if /dev/zero of=/swapfile bs=1G count=2 status=progress
+		dd if=/dev/zero of=/swapfile bs=1G count=2 status=progress
 		chmod 600 /swapfile
 		mkswap -U clear /swapfile
 		echo -e "\nMaking a fstab backup...\n"
@@ -497,7 +497,7 @@ then
 		swapon -a
 	elif [ $swapspace -eq '3' ]
 	then
-		dd if /dev/zero of=/swapfile bs=1G count=4 status=progress
+		dd if=/dev/zero of=/swapfile bs=1G count=4 status=progress
 		chmod 600 /swapfile
 		mkswap -U clear /swapfile
 		echo -e "\nMaking a fstab backup...\n"
@@ -507,7 +507,7 @@ then
 		swapon -a
 	elif [ $swapspace -eq '4' ]
 	then
-		dd if /dev/zero of=/swapfile bs=1G count=8 status=progress
+		dd if=/dev/zero of=/swapfile bs=1G count=8 status=progress
 		chmod 600 /swapfile
 		mkswap -U clear /swapfile
 		echo -e "\nMaking a fstab backup...\n"
@@ -527,7 +527,7 @@ echo -e "\nSetting the hostname...\n"
 hostnamectl set-hostname $nameofhost
 echo -e "127.0.0.1	localhost\n127.0.1.1	$nameofhost" > /etc/hosts
 echo -e "\nSetting the timezone...\n"
-timedatectl set-timezone $timezone
+ln -sf /usr/share/zoneinfo/$timezone /etc/localtime
 systemctl enable systemd-timesyncd
 sleep 1
 
