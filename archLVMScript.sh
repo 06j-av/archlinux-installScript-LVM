@@ -408,7 +408,7 @@ sleep 1
 
 # Store the mkinitcpio files in the repository into a directory at the root level of the new installation.
 # This will be removed at the end of the installation.
-mkdir /mnt/installScript-files
+mkdir -v /mnt/installScript-files
 
 cat <<REALEND > /mnt/installScript-files/archInstall.sh
 clear
@@ -620,8 +620,10 @@ exit 0
 
 REALEND
 
-cp mkinitcpio_withlvm.conf /mnt/installScript-files/
-cp mkinitcpio_withnvidia.conf /mnt/installScript-files/
+cp -v /root/installScript/mkinitcpio_withlvm.conf /mnt/installScript-files/
+cp -v /root/installScript/mkinitcpio_withnvidia.conf /mnt/installScript-files/
+
+sleep 3
 
 arch-chroot /mnt /bin/bash installScript-files/archInstall.sh
 rm -rf /mnt/installScript-files
