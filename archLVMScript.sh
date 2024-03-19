@@ -564,16 +564,53 @@ then
 	then
 		echo -e '\nInstalling the nvidia package...\n'
 		pacman -S nvidia nvidia-utils --noconfirm --needed
+  		echo -e '\nCreating pacman hook for nvidia...\n'
+    		cat <<NVIDIAHOOK > /etc/pacman.d/hooks/nvidia.hook
+		[Trigger]
+		Operation=Install
+		Operation=Upgrade
+		Operation=Remove
+		Type=Package
+		Target=nvidia
+		Target=linux
+		
+		[Action]
+		Description=Update NVIDIA module in initcpio
+		Depends=mkinitcpio
+		When=PostTransaction
+		NeedsTargets
+		Exec=/bin/sh -c 'while read -r trg; do case $trg in linux*) exit 0; esac; done; /usr/bin/mkinitcpio -P'
+		
+  		NVIDIAHOOK
 	elif [ $nvidiatype -eq '2' ]
 	then
 		echo -e "\nInstalling the nvidia-open package...\n"
 		pacman -S nvidia-open nvidia-utils --noconfirm --needed
+  		echo -e '\nCreating pacman hook for nvidia-open...\n'
+    		cat <<NVIDIAHOOK > /etc/pacman.d/hooks/nvidia.hook
+		[Trigger]
+		Operation=Install
+		Operation=Upgrade
+		Operation=Remove
+		Type=Package
+		Target=nvidia-open
+		Target=linux
+		
+		[Action]
+		Description=Update NVIDIA module in initcpio
+		Depends=mkinitcpio
+		When=PostTransaction
+		NeedsTargets
+		Exec=/bin/sh -c 'while read -r trg; do case $trg in linux*) exit 0; esac; done; /usr/bin/mkinitcpio -P'
+		
+  		NVIDIAHOOK
 	fi
  	echo -e "\nUpdating the linux initramfs...\n"
 	cp -f /installScript-files/mkinitcpio_withnvidia.conf /etc/mkinitcpio.conf
  	sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet"/GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet nvidia_drm.modeset=1"/' /etc/default/grub
  	mkinitcpio -P linux
-  	
+  	grub-mkconfig -o /boot/grub/grub.cfg
+   
 elif [ "$nvidiayn" = "n" ]
 then
 	echo -e "\nInstalling the mesa package...\n"
@@ -590,7 +627,7 @@ pacman -S pipewire lib32-pipewire wireplumber pipewire-pulse pipewire-alsa pipew
 if [ $desktop -eq '1' ]
 then
 	echo -e "\nInstalling KDE Plasma with SDDM...\n"
-	pacman -S xorg plasma sddm alacritty konqueror --noconfirm --needed
+	pacman -S xorg plasma sddm alacritty dolphin --noconfirm --needed
 	systemctl enable sddm
 elif [ $desktop -eq '2' ]
 then
