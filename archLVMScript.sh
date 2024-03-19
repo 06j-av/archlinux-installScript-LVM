@@ -452,7 +452,7 @@ passwd
 echo -e "\nCreating user $username...\n"
 useradd -m -g users -G wheel $username
 echo -e "\nSet the password for $username.\n"
-password $username
+passwd $username
 sleep 1
 
 # Edit the sudoers file ensuring that people in the wheel group can use sudo.
@@ -524,9 +524,8 @@ sleep 1
 # Set the hostname and time zone.
 
 echo -e "\nSetting the hostname...\n"
-hostnamectl set-hostname $nameofhost
-echo -e "127.0.0.1	localhost\n127.0.1.1	$nameofhost" > /etc/hosts
-echo -e "\nSetting the timezone...\n"
+echo "$nameofhost" > /etc/hostname
+echo -e "127.0.0.1	localhost\n127.0.1.1	$nameofhost" > /etc/hostsecho -e "\nSetting the timezone...\n"
 ln -sf /usr/share/zoneinfo/$timezone /etc/localtime
 systemctl enable systemd-timesyncd
 sleep 1
@@ -577,22 +576,26 @@ then
 fi
 sleep 1
 
+# Install PipeWire audio drivers
+echo -e "\nInstalling PipeWire...\n"
+pacman -S pipewire lib32-pipewire wireplumber pipewire-pulse pipewire-alsa pipewire-jack lib32-pipewire-jack --noconfirm --needed
+
 # Install the preferred desktop environment and its companion display manager (if chosen to do so)
 
 if [ $desktop -eq '1' ]
 then
 	echo -e "\nInstalling KDE Plasma with SDDM...\n"
-	pacman -S plasma sddm alacritty --noconfirm --needed
+	pacman -S xorg plasma sddm alacritty --noconfirm --needed
 	systemctl enable sddm
 elif [ $desktop -eq '2' ]
 then
 	echo -e "\nInstalling i3 with ly...\n"
-	pacman -S i3 ly alacritty --noconfirm --needed
+	pacman -S xorg i3 ly alacritty --noconfirm --needed
 	systemctl enable ly
 elif [ $desktop -eq '3' ]
 then
 	echo -e "\nInstalling Cinnamon with LightDM...\n"
-	pacman -S lightdm lightdm-gtk-greeter cinnamon metacity alacritty --noconfirm --needed
+	pacman -S xorg lightdm lightdm-gtk-greeter cinnamon metacity alacritty --noconfirm --needed
 	systemctl enable lightdm
 elif [ $desktop -eq '4' ]
 then
