@@ -428,9 +428,7 @@ pacman -S networkmanager wpa_supplicant wireless_tools netctl dialog bluez bluez
 echo -e "\nEnabling Network Manager...\n"
 systemctl enable NetworkManager
 echo -e "\nConfiguring the linux initcpio...\n"
-mv /etc/mkinitcpio.conf /etc/mkinitcpio.conf.bak
-cp /installScript-files/mkinitcpio_withlvm.conf /etc/mkinitcpio.conf
-rm /etc/mkinitcpio.conf.bak
+cp -f /installScript-files/mkinitcpio_withlvm.conf /etc/mkinitcpio.conf
 mkinitcpio -P linux
 sleep 1
 
@@ -570,9 +568,8 @@ then
 		pacman -S nvidia-open nvidia-utils --noconfirm --needed
 	fi
  	echo -e "\nUpdating the linux initramfs...\n"
-	mv /etc/mkinitcpio.conf /etc/mkinitcpio.conf.bak
-	cp /installScript-files/mkinitcpio_withnvidia.conf /etc/mkinitcpio.conf
-	rm /etc/mkinitcpio.conf.bak
+	cp -f /installScript-files/mkinitcpio_withnvidia.conf /etc/mkinitcpio.conf
+ 	mkinitcpio -P linux
 elif [ "$nvidiayn" = "n" ]
 then
 	echo -e "\nInstalling the mesa package...\n"
@@ -604,8 +601,6 @@ fi
 
 # Remove the ANNOYING PC speaker module from the kernel
 echo -e "\nLastly... blacklisting the PC speaker module\n"
-rmmod pcspkr
-rmmod snd_pcsp
 echo -e "blacklist pcspkr\nblacklist snd_pcsp" > /etc/modprobe.d/nobeep.conf
 
 sleep 1
