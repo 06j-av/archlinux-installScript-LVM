@@ -218,8 +218,6 @@ then
 	echo "You are using an AMD CPU."
 fi
 
-
-
 if [ "$nvidiayn" = "y" ]  && [ $nvidiatype -eq '1' ]
 then
 	echo "And you are using an NVIDIA GPU and want to install the nvidia package."
@@ -358,7 +356,7 @@ echo "PARTITIONING & LVM SETUP"
 echo "-----------------------------------------"
 sleep 1
 
-# Format the ESP if allowed.
+# Format the ESP if requested.
 if [ $efientry -eq '2' ]
 then
 	echo "You have chosen to format the EFI System Partition."
@@ -450,11 +448,11 @@ echo "-----------------------------------------"
 
 # Set the passwords for the user and root
 
-echo -e "\Set the root password.\n"
+echo -e "\nSetting the root password...\n"
 echo '$rootpasswd' | passwd --stdin root
 echo -e "\nCreating user $username...\n"
 useradd -m -g users -G wheel $username
-echo -e "\nSet the password for $username.\n"
+echo -e "\nSetting the password for $username...\n"
 echo '$userpasswd' | passwd --stdin $username
 sleep 1
 
@@ -592,12 +590,12 @@ pacman -S pipewire lib32-pipewire wireplumber pipewire-pulse pipewire-alsa pipew
 if [ $desktop -eq '1' ]
 then
 	echo -e "\nInstalling KDE Plasma with SDDM...\n"
-	pacman -S xorg plasma sddm alacritty --noconfirm --needed
+	pacman -S xorg plasma sddm alacritty konqueror --noconfirm --needed
 	systemctl enable sddm
 elif [ $desktop -eq '2' ]
 then
 	echo -e "\nInstalling i3 with ly...\n"
-	pacman -S xorg i3 ly alacritty nitrogen --noconfirm --needed
+	pacman -S xorg i3 ly alacritty nitrogen ranger --noconfirm --needed
 	systemctl enable ly
 elif [ $desktop -eq '3' ]
 then
@@ -614,6 +612,11 @@ echo -e "\nLastly... blacklisting the PC speaker module\n"
 echo -e "blacklist pcspkr\nblacklist snd_pcsp" > /etc/modprobe.d/nobeep.conf
 
 sleep 1
+
+echo -e '\nClearing the pacman cache...\n'
+pacman -Scc --noconfirm
+rm -f /var/cache/pacman/pkg/*
+
 clear
 echo "Installation is COMPLETE. "
 echo "We'll leave it to you to either do some more configurations or reboot to your new Arch system."
