@@ -28,10 +28,9 @@ else
 fi
 
 # Prompts the user if they basically want to format the ESP
-echo -e "\nAre there any existing EFI entries in $efipart that you want to keep?"
-echo "For example, are you multi-booting Arch Linux?"
-echo "Choose WISELY."
-read -p "(1. Yes, don't format $efipart.) (2. No, format $efipart.) " efientry
+echo -e "\nDo you want to format $efipart?"
+echo "If $efipart is formatted, everything (including EFI entries) in the ESP will be erased, so CHOOSE WISELY."
+read -p "(1. Don't format $efipart.) (2. Format $efipart.) " efientry
 
 if [ $efientry -ne '1' ] && [ $efientry -ne '2' ]
 then
@@ -43,8 +42,16 @@ fi
 # Ask the user for their root partition
 echo -e "\nWhat's the path to the root (/) partition?"
 echo "This is where Arch will be installed."
-echo -e "ex. /dev/sda2 or /dev/sda3\n"
+echo -e "ex. /dev/sda2 or /dev/nvme0n1p3\n"
 read -p "Root path: " rootpart
+
+# If the ESP and the root partition are the same, abort
+if [ "$efipart" = "$rootpart" ]
+then
+	echo "The ESP partition and root partition cannot be the same."
+	echo "Aborting."
+	exit 2
+fi
 
 # Ensure the root path provided is a device file and a partition
 if [[ -b "$rootpart" && "$(lsblk -no TYPE "$rootpart")" == "part" ]]; then
@@ -52,13 +59,6 @@ if [[ -b "$rootpart" && "$(lsblk -no TYPE "$rootpart")" == "part" ]]; then
 else
 	echo "Error: Invalid root path."
 	exit 1
-fi
-
-if [ "$efipart" = "$rootpart" ]
-then
-	echo "The ESP partition and root partition cannot be the same."
-	echo "Aborting."
-	exit 2
 fi
 
 # Summarize the inputs so far
