@@ -1,18 +1,17 @@
 #!/bin/bash
 
 clear
-
+# Just a nice little introduction :3
 echo "----------------------------------------------------------------------------"
 echo " Welcome to 06j-av's automated Arch Linux install script."
-echo -e " Ensure that you have made both your root partition (ensure the type is \n"Linux LVM") and your EFI partition. "
+echo -e " Ensure that you have made both your root partition (ensure the type is \n 'Linux LVM') and your EFI partition. "
 echo " This script is for 64-bit UEFI systems ONLY. "
 echo " LVM setup is included. "
 echo "----------------------------------------------------------------------------"
-# sleep 3
 
 echo "First, you'll need to provide some information"
 echo "before we start to install Arch for you."
-# sleep 2
+sleep 2
 
 # Ask the user for their EFI System Partition (ESP)
 echo -e "\nWhat's the path to your EFI System Partition?"
@@ -28,6 +27,7 @@ else
   	exit 1
 fi
 
+# Prompts the user if they basically want to format the ESP
 echo -e "\nAre there any existing EFI entries in $efipart that you want to keep?"
 echo "For example, are you multi-booting Arch Linux?"
 echo "Choose WISELY."
@@ -40,6 +40,7 @@ then
 	exit 1
 fi
 
+# Ask the user for their root partition
 echo -e "\nWhat's the path to the root (/) partition?"
 echo "This is where Arch will be installed."
 echo -e "ex. /dev/sda2 or /dev/sda3\n"
@@ -60,6 +61,7 @@ then
 	exit 2
 fi
 
+# Summarize the inputs so far
 echo -e "\nJust to confirm..."
 sleep 2
 echo "Your EFI system partition is $efipart."
@@ -79,18 +81,18 @@ else	echo "Aborting."
 		exit 1
 fi
 
-sleep 2
-echo -e "\nLet's configure some stuff."
 sleep 1
+echo -e "\nLet's configure some stuff."
 echo ''
+# Prompt the user for their username, hostname, and time zone.
+# The user will enter the root and user passwords during installation.
 read -p "What will be your username? " username
 echo ''
 read -p "Enter your preferred hostname: " nameofhost
 echo -e "What's your time zone?"
 read -p "They usually follow the Region/City format, like 'America/Los_Angeles'. " timezone
-read -p "Enter the name for the volume group: " vgname
-read -p "Enter the name for the logical volume: " lvname
 
+# Check if the time zone is valid.
 if [ -e /usr/share/zoneinfo/$timezone ]; then
 	echo -e "\nFound the timezone $timezone!"
 else
@@ -99,9 +101,15 @@ else
 	exit 1
 fi
 
+# Prompt the user for the labels for the volume group and logical volume.
+read -p "Enter the name for the volume group: " vgname
+read -p "Enter the name for the logical volume: " lvname
+
+# Prompt the user for their preferred desktop environment and display manager (if any)
 echo -e "\nWhat desktop environment + display manager would you like to use?"
 read -p "(1. KDE + SDDM) (2. i3 + ly) (3. Cinnamon + LightDM) (4. Nothing/Minimal installation) " desktop
 
+# This is to ensure the input is what is expected. If not then abort
 if [ $desktop -ne '1' ] && [ $desktop -ne '2' ] && [ $desktop -ne '3' ] && [ $desktop -ne '4' ]
 then
 	echo "Invalid response."
@@ -112,6 +120,7 @@ fi
 echo -e "\nHow much swap do you want? \nThis will be a file, not a partition."
 read -p "(1. No swap) (2. 2G swap) (3. 4G swap) (4. 8G swap) " swapspace
 
+# This is to ensure the input is what is expected. If not then abort
 if [ $swapspace -ne '1' ] && [ $swapspace -ne '2' ] && [ $swapspace -ne '3' ] && [ $swapspace -ne '4' ]
 then
 	echo "Invalid response."
@@ -122,6 +131,7 @@ fi
 echo -e "\nAre you using an Intel or AMD CPU?"
 read -p "(1. Intel) (2. AMD) " cpumake
 
+# This is to ensure the input is what is expected. If not then abort
 if [ $cpumake -ne '1' ] && [ $cpumake -ne '2' ]
 then
 	echo "Invalid response."
@@ -131,6 +141,7 @@ fi
 
 read -p "Are you using an NVIDIA GPU? (y/n) " nvidiayn
 
+# This is to ensure the input is what is expected. If not then abort
 if [ "$nvidiayn" != 'y' ] && [ "$nvidiayn" != 'n' ]
 then
 	echo "Invalid response."
@@ -139,17 +150,23 @@ then
 fi
 
 if [ "$nvidiayn" = "y" ]; then
-		echo "To install the appropriate driver, which series of NVIDIA GPUs do you have?"
-		read -p "(1. Maxwell series and newer (nvidia)) (2. Turing or newer (open source) (nvidia-open)) " nvidiatype
+	# As Arch Linux has different NVIDIA drivers
+ 	echo "Take a look at your NVIDIA GPU series. Choose the NVIDIA package that is recommended for your GPU series. "
+  	echo "According to the Arch Wiki..."
+   	echo "For the Maxwell (NV110/GMXXX) series and newer, install the 'nvidia' package"
+    	echo "Alternatively for the Turing (NV160/TUXXX) series or newer the 'nvidia-open' package may be installed for open source kernel modules on the linux kernel"
+	read -p "(1. nvidia) (2. nvidia-open) " nvidiatype
+	
+ 	# This is to ensure the input is what is expected. If not then abort
+	if [ $nvidiatype -ne '1' ] && [ $nvidiatype -ne '2' ]
+	then
+		echo "Invalid response."
+		echo "Aborting."
+		exit 1
+	fi
 fi
 
-if [ $nvidiatype -ne '1' ] && [ $nvidiatype -ne '2' ]
-then
-	echo "Invalid response."
-	echo "Aborting."
-	exit 1
-fi
-
+# Summarize the configurations so far.
 echo -e "\nLet's confirm your configurations."
 
 sleep 1
@@ -215,6 +232,7 @@ sleep 1
 
 read -p "Is this correct? (y/n) " configconfirm
 
+# Summarize the partitioning and installation configurations.
 return_configurations() {
 
 	echo '===== PARTITIONING & FORMATTING ====='
@@ -247,6 +265,7 @@ return_configurations() {
 	elif [ $desktop -eq '4' ]
 	then
 		echo "Minimal installation"
+  		echo "You will begin at the Linux console after reboot."
 	fi
 
   	echo "System hostname: $nameofhost"
@@ -288,11 +307,11 @@ return_configurations() {
 		echo "The nvidia-open package will be installed."
 	elif [ "$nvidiayn" = "n" ]
 	then
-		echo "GPU: Other GPU (using nouveau drivers)"
+		echo "GPU: Other GPU (using mesa)"
 	fi
 }
 
-
+# Ensure the user actually wants to proceed.
 if [ "$configconfirm" = "y" ]
 then
 	clear
@@ -336,6 +355,7 @@ echo "PARTITIONING & LVM SETUP"
 echo "-----------------------------------------"
 sleep 1
 
+# Format the ESP if allowed.
 if [ $efientry -eq '2' ]
 then
 	echo "You have chosen to format the EFI System Partition."
@@ -347,7 +367,7 @@ then
 fi
 
 sleep 1
-
+# Set up the physical volume, volume group, and logical volume.
 echo "Setting up LVM..."
 echo -e "Creating physical volume...\n"
 pvcreate $rootpart
@@ -368,6 +388,7 @@ mkfs.ext4 $lvmpath
 
 sleep 1
 
+# Mount the file systems and build the fstab file.
 echo -e "\nMounting the file systems...\n"
 mount $lvmpath /mnt
 mount --mkdir $efipart /mnt/boot/efi
@@ -385,6 +406,8 @@ pacstrap /mnt base --noconfirm --needed
 
 sleep 1
 
+# Store the mkinitcpio files in the repository into a directory at the root level of the new installation.
+# This will be removed at the end of the installation.
 mkdir /mnt/installScript-files
 
 cat <<REALEND > /mnt/installScript-files/archInstall.sh
@@ -393,6 +416,9 @@ echo "-----------------------------------------"
 echo "INSTALLATION"
 echo "-----------------------------------------"
 sleep 1
+
+# Install some tools, including the linux kernel
+
 echo -e "\nInstalling the linux kernel & essential tools ...\n"
 pacman -S linux linux-firmware linux-headers base-devel lvm2 git neofetch zip unzip --noconfirm --needed
 echo -e "\nInstalling the nvim terminal text editor...\n"
@@ -407,6 +433,9 @@ cp /installScript-files/mkinitcpio_withlvm.conf /etc/mkinitcpio.conf
 rm /etc/mkinitcpio.conf.bak
 mkinitcpio -P linux
 sleep 1
+
+# Configure the locale
+
 echo -e "\nConfiguring the locale to US English UTF-8...\n"
 sed -i 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
 locale-gen
@@ -418,6 +447,8 @@ echo "-----------------------------------------"
 echo "Root and user setup"
 echo "-----------------------------------------"
 
+# Set the passwords for the user and root
+
 echo -e "\Set the root password.\n"
 passwd
 echo -e "\nCreating user $username...\n"
@@ -425,9 +456,15 @@ useradd -m -g users -G wheel -s $username
 echo -e "\nSet the password for $username.\n"
 password $username
 sleep 1
+
+# Edit the sudoers file ensuring that people in the wheel group can use sudo.
+
 echo -e "\nConfiguring sudoers...\n"
 sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 sleep 1
+
+# Install GRUB and configure it.
+
 echo -e "\nInstalling the GRUB bootloader...\n"
 pacman -S grub dosfstools os-prober mtools efibootmgr --noconfirm --needed
 grub-install --target=x86_64-efi --bootloader-id=grub_uefi --recheck
@@ -444,6 +481,9 @@ else
 	grub-mkconfig -o /boot/grub/grub.cfg
 fi
 sleep 1
+
+# Make the swap file.
+
 if [ $swapspace -ne '1' ]
 then	
 	echo -e "\nBuilding swap file...\n"
@@ -482,6 +522,9 @@ else
 	echo "A swap file will not be made, per your request."
 fi
 sleep 1
+
+# Set the hostname and time zone.
+
 echo -e "\nSetting the hostname...\n"
 hostnamectl set-hostname $nameofhost
 echo -e "127.0.0.1	localhost\n127.0.1.1	$nameofhost" > /etc/hosts
@@ -489,9 +532,16 @@ echo -e "\nSetting the timezone...\n"
 timedatectl set-timezone $timezone
 systemctl enable systemd-timesyncd
 sleep 1
+
+# Add the multilib repository
+
 echo -e "\nEnabling the multilib repository...\n"
 echo -e "[multilib]\nInclude = /etc/pacman.d/mirrorlist" >> /etc/pacman.conf
+pacman -Sy
 sleep 1
+
+# Install the CPU microcodes and regenerate the GRUB config
+
 if [ $cpumake -eq '1' ]
 then
 	echo -e "\nInstalling the Intel microcode...\n"
@@ -503,6 +553,9 @@ then
 fi
 grub-mkconfig -o /boot/grub/grub.cfg
 sleep 1
+
+# Install NVIDIA if the user has an NVIDIA GPU
+
 if [ "$nvidiayn" = "y" ]
 then
 	echo -e "\nNVIDIA time.\n"
@@ -526,6 +579,9 @@ then
 	pacman -S mesa --noconfirm --needed
 fi
 sleep 1
+
+# Install the preferred desktop environment and its companion display manager (if chosen to do so)
+
 if [ $desktop -eq '1' ]
 then
 	echo -e "\nInstalling KDE Plasma with SDDM...\n"
@@ -545,17 +601,19 @@ elif [ $desktop -eq '4' ]
 then
 	echo "No desktop environment and display manager will be installed."
 fi
+
 sleep 1
 clear
 echo "Installation is COMPLETE. "
 echo "We'll leave it to you to either do some more configurations or reboot to your new Arch system."
 echo "To reboot, run these commands in order:"
-echo -e "exit\numount -R /mnt\nreboot"
+echo -e "umount -R /mnt\nreboot"
+echo "To do some more configurations, run:"
+echo "arch-chroot /mnt"
 exit 0
 
 REALEND
 
-mkdir /mnt/installScript-files
 cp mkinitcpio_withlvm.conf /mnt/installScript-files/
 cp mkinitcpio_withnvidia.conf /mnt/installScript-files/
 
