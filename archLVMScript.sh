@@ -450,8 +450,10 @@ echo "-----------------------------------------"
 
 echo -e "\nSetting the root password...\n"
 echo '$rootpasswd' | passwd --stdin root
+sleep 1
 echo -e "\nCreating user $username...\n"
 useradd -m -g users -G wheel $username
+sleep 1
 echo -e "\nSetting the password for $username...\n"
 echo '$userpasswd' | passwd --stdin $username
 sleep 1
@@ -462,6 +464,11 @@ echo -e "\nConfiguring sudoers...\n"
 sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 sleep 1
 
+clear
+echo "-----------------------------------------"
+echo "GRUB installation"
+echo "-----------------------------------------"
+
 # Install GRUB and configure it.
 
 echo -e "\nInstalling the GRUB bootloader...\n"
@@ -471,17 +478,22 @@ if [ -d /boot/grub/locale ]; then
 	echo "Copying the locale for GRUB..."
 	cp /usr/share/locale/en\@quot/LC_MESSAGES/grub.mo /boot/grub/locale/en.mo
 	echo "Making the GRUB configuration..."
- 	sed -i 's/^#GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' /etc/default/grub
+ 	sed -i 's/^#GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER="false"/' /etc/default/grub
 	grub-mkconfig -o /boot/grub/grub.cfg
 else
 	echo "Making the /boot/grub/locale directory..."
 	mkdir /boot/grub/locale
 	echo "Copying the locale for GRUB..."
 	cp /usr/share/locale/en\@quot/LC_MESSAGES/grub.mo /boot/grub/locale/en.mo
-  	sed -i 's/^#GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' /etc/default/grub
+  	sed -i 's/^#GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER="false"/' /etc/default/grub
 	grub-mkconfig -o /boot/grub/grub.cfg
 fi
 sleep 1
+
+clear
+echo "-----------------------------------------"
+echo "Swap file setup"
+echo "-----------------------------------------"
 
 # Make the swap file.
 
@@ -523,6 +535,11 @@ else
 	echo "A swap file will not be made, per your request."
 fi
 sleep 1
+
+clear
+echo "-----------------------------------------"
+echo "Almost there..."
+echo "-----------------------------------------"
 
 # Set the hostname and time zone.
 
