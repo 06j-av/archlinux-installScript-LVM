@@ -560,6 +560,7 @@ if [ "$nvidiayn" = "y" ]
 then
 	echo -e "\nNVIDIA time.\n"
 	sleep 0.5
+ 	mkdir /etc/pacman.d/hooks
 	if [ $nvidiatype -eq '1' ]
 	then
 		echo -e '\nInstalling the nvidia package...\n'
