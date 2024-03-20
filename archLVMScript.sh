@@ -565,45 +565,13 @@ then
 		echo -e '\nInstalling the nvidia package...\n'
 		pacman -S nvidia nvidia-utils --noconfirm --needed
   		echo -e '\nCreating pacman hook for nvidia...\n'
-    		cat <<NVIDIAHOOK > /etc/pacman.d/hooks/nvidia.hook
-		[Trigger]
-		Operation=Install
-		Operation=Upgrade
-		Operation=Remove
-		Type=Package
-		Target=nvidia
-		Target=linux
-		
-		[Action]
-		Description=Update NVIDIA module in initcpio
-		Depends=mkinitcpio
-		When=PostTransaction
-		NeedsTargets
-		Exec=/bin/sh -c 'while read -r trg; do case $trg in linux*) exit 0; esac; done; /usr/bin/mkinitcpio -P'
-		
-  		NVIDIAHOOK
+    		cp /installScript-files/nvidia-hook.hook /etc/pacman.d/hooks/nvidia.hook
 	elif [ $nvidiatype -eq '2' ]
 	then
 		echo -e "\nInstalling the nvidia-open package...\n"
 		pacman -S nvidia-open nvidia-utils --noconfirm --needed
   		echo -e '\nCreating pacman hook for nvidia-open...\n'
-    		cat <<NVIDIAHOOK > /etc/pacman.d/hooks/nvidia.hook
-		[Trigger]
-		Operation=Install
-		Operation=Upgrade
-		Operation=Remove
-		Type=Package
-		Target=nvidia-open
-		Target=linux
-		
-		[Action]
-		Description=Update NVIDIA module in initcpio
-		Depends=mkinitcpio
-		When=PostTransaction
-		NeedsTargets
-		Exec=/bin/sh -c 'while read -r trg; do case $trg in linux*) exit 0; esac; done; /usr/bin/mkinitcpio -P'
-		
-  		NVIDIAHOOK
+    		cp /installScript-files/nvidia-open-hook.hook /etc/pacman.d/hooks/nvidia.hook
 	fi
  	echo -e "\nUpdating the linux initramfs...\n"
 	cp -f /installScript-files/mkinitcpio_withnvidia.conf /etc/mkinitcpio.conf
@@ -667,6 +635,8 @@ REALEND
 
 cp -v /root/installScript/mkinitcpio_withlvm.conf /mnt/installScript-files/
 cp -v /root/installScript/mkinitcpio_withnvidia.conf /mnt/installScript-files/
+cp -v /root/installScript/nvidia-open-hook.hook /mnt/installScript-files/
+cp -v /root/installScript/nvidia-hook.hook /mnt/installScript-files/
 
 sleep 3
 
