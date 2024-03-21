@@ -10,7 +10,7 @@ This script automates the installation process of Arch Linux with Logical Volume
 
 ## Usage
 
-1. **Boot from USB**: Insert the bootable USB drive into your system and boot from it. (obviously)
+1. **Boot from USB**: Insert the bootable USB drive into your system, boot from it, and get yourself a great internet connection. (obviously)
 
 2. **Prepare Disk**:
    - Ensure that you create an EFI System Partition (ESP) and a partition with the type set as "Linux LVM". You can confirm using:
