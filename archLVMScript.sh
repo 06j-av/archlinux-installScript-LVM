@@ -651,10 +651,10 @@ exit 0
 
 REALEND
 
-cp -v /root/installScript/mkinitcpio_withlvm.conf /mnt/installScript-files/
-cp -v /root/installScript/mkinitcpio_withnvidia.conf /mnt/installScript-files/
-cp -v /root/installScript/nvidia-open-hook.hook /mnt/installScript-files/
-cp -v /root/installScript/nvidia-hook.hook /mnt/installScript-files/
+cp -v /root/archlinux-installScript-LVM/mkinitcpio_withlvm.conf /mnt/installScript-files/
+cp -v /root/archlinux-installScript-LVM/mkinitcpio_withnvidia.conf /mnt/installScript-files/
+cp -v /root/archlinux-installScript-LVM/nvidia-open-hook.hook /mnt/installScript-files/
+cp -v /root/archlinux-installScript-LVM/nvidia-hook.hook /mnt/installScript-files/
 
 sleep 3
 
