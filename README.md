@@ -55,4 +55,4 @@ This script automates the installation process of Arch Linux with Logical Volume
 
 ## Support
 
-If you encounter any issues or have questions about the script, feel free to [report it as an issue](https://github.com/06j-av/archlinux-installScript-LVM/issues) on our GitHub repository or seek help from the Arch Linux community forums.
+If you encounter any issues or have questions about the script, feel free to [report it as an issue](https://github.com/06j-av/archlinux-installScript-LVM/issues).
