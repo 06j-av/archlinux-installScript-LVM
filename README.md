@@ -1,5 +1,8 @@
 # Arch Linux Installation Script with LVM Setup
 
+## IMPORTANT
+This has been deprecated (or whatever you call it) in favor of a better Terminal User Interface [variant](https://github.com/06j-av/ArchLinux-lvm_tui) of this script.
+
 This script automates the installation process of Arch Linux with Logical Volume Management (LVM). It is designed to make the installation steps more simpler for incoming Arch Linux users.
 
 ## Some stuff you need to know
